@@ -1,0 +1,22 @@
+# Dependencies & build
+node_modules
+.pnpm-store
+dist
+*.tsbuildinfo
+
+# Env (keep example for docs)
+.env
+.env.*
+!.env.example
+
+# Test & logs
+coverage
+*.log
+pnpm-debug.log*
+
+# OS & editors
+.DS_Store
+
+# Vite (demo app later)
+.vite
+*.local
