@@ -63,3 +63,96 @@ export interface MutationRecord<T = JsonValue> {
   /** Previous value at path, for display and time-travel undo */
   readonly previousValue: T | undefined;
 }
+
+// --- Timeline events (union) ---
+
+/** Origin of a change: local user, replay (time travel), or remote (sync). */
+export type ChangeOrigin = 'local' | 'replay' | 'remote';
+
+/** Event: store state was mutated (e.g. direct assignment or $patch). */
+export interface TimelineEventMutation {
+  readonly type: 'mutation';
+  readonly id: string;
+  readonly storeId: string;
+  readonly timestamp: number;
+  readonly origin: ChangeOrigin;
+  readonly path: Path;
+  readonly value: JsonValue;
+  readonly previousValue: JsonValue | undefined;
+}
+
+/** Event: an action was invoked (before/after state captured separately). */
+export interface TimelineEventAction {
+  readonly type: 'action';
+  readonly id: string;
+  readonly storeId: string;
+  readonly timestamp: number;
+  readonly origin: ChangeOrigin;
+  readonly name: string;
+  readonly payload: JsonValue | undefined;
+  /** Snapshot id of state before action (if captured). */
+  readonly beforeSnapshotId: string | undefined;
+  /** Snapshot id of state after action (if captured). */
+  readonly afterSnapshotId: string | undefined;
+}
+
+/** Event: full or incremental snapshot was taken. */
+export interface TimelineEventSnapshot {
+  readonly type: 'snapshot';
+  readonly id: string;
+  readonly storeId: string;
+  readonly timestamp: number;
+  readonly origin: ChangeOrigin;
+  /** Reference to immutable snapshot payload. */
+  readonly snapshotId: string;
+  /** If incremental, the base snapshot id this diff applies to. */
+  readonly baseSnapshotId: string | undefined;
+}
+
+/** Event: change received from remote (collaboration/sync). */
+export interface TimelineEventRemote {
+  readonly type: 'remote';
+  readonly id: string;
+  readonly storeId: string;
+  readonly timestamp: number;
+  readonly payload: JsonValue;
+  /** Opaque remote identifier for dedup. */
+  readonly remoteId?: string;
+}
+
+export type TimelineEvent =
+  | TimelineEventMutation
+  | TimelineEventAction
+  | TimelineEventSnapshot
+  | TimelineEventRemote;
+
+// --- Clock (injectable; no Date.now() in core) ---
+
+export interface Clock {
+  now(): number;
+}
+
+// --- Snapshot strategy ---
+
+/** How to capture store state: full copy or incremental diff. */
+export type SnapshotStrategyKind = 'full' | 'incremental';
+
+/** Per-store strategy; default used when storeId not listed. */
+export interface SnapshotStrategyConfig {
+  readonly default: SnapshotStrategyKind;
+  readonly perStore?: Readonly<Record<string, SnapshotStrategyKind>>;
+}
+
+/** Resolves strategy for a store. */
+export function getSnapshotStrategy(
+  config: SnapshotStrategyConfig,
+  storeId: string
+): SnapshotStrategyKind {
+  return config.perStore?.[storeId] ?? config.default;
+}
+
+/** Payload for incremental snapshot: base snapshot id + deep changes to apply. */
+export interface IncrementalSnapshotPayload {
+  readonly baseSnapshotId: string;
+  readonly changes: readonly DeepChange[];
+}
