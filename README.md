@@ -29,11 +29,13 @@ pnpm format:check
 
 ## Packages
 
-| Package            | Purpose                          |
-|--------------------|----------------------------------|
-| `inspector-core`   | Types, TimelineBuffer, diff, serialize |
-| `inspector-vue`    | Pinia plugin, composables (Step 3+)     |
-| `inspector-server` | WebSocket sync (Step 5+)               |
+| Package            | Purpose |
+|--------------------|--------|
+| `inspector-core`   | Timeline engine, event buffer, snapshots, diff, patch apply. Framework-agnostic. |
+| `inspector-vue`    | Pinia plugin, time-travel, `createStateWeaver` → enable/disable, goTo, export/import. |
+| `inspector-server` | WebSocket sync (planned). |
+
+See `docs/PHASE2-RECOMMENDATIONS.md` for timeline details and recommendations.
 
 ## Requirements
 
