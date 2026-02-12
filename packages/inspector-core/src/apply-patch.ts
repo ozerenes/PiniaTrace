@@ -23,14 +23,16 @@ function applySingleChange(
     replaceRoot(root, value);
     return;
   }
-  const [head, ...rest] = path;
+  const head = path[0] as PathSegment;
+  const rest = path.slice(1);
   if (rest.length === 0) {
     setAt(root, head, value);
     return;
   }
+  const nextSegment: PathSegment = rest[0] as PathSegment;
   const parent = getAt(root, head);
   if (parent === undefined || parent === null) {
-    const nextContainer = createContainer(rest[0]);
+    const nextContainer = createContainer(nextSegment);
     setAt(root, head, nextContainer);
     applySingleChange(
       nextContainer as Record<string, unknown> | unknown[],
@@ -46,7 +48,7 @@ function applySingleChange(
       value
     );
   } else {
-    const nextContainer = createContainer(rest[0]);
+    const nextContainer = createContainer(nextSegment);
     setAt(root, head, nextContainer);
     applySingleChange(
       nextContainer as Record<string, unknown> | unknown[],

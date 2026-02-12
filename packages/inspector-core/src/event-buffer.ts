@@ -58,6 +58,16 @@ export class EventBuffer {
     return out;
   }
 
+  /** Last event in the buffer, or undefined if empty. */
+  last(): TimelineEvent | undefined {
+    return this.length === 0 ? undefined : this.at(this.length - 1);
+  }
+
+  /** First event in the buffer, or undefined if empty. */
+  first(): TimelineEvent | undefined {
+    return this.at(0);
+  }
+
   clear(): void {
     this.buffer = new Array(this.maxSize);
     this.start = 0;

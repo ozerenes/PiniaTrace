@@ -26,12 +26,22 @@ export interface TimelineEngine {
   registerSnapshot(id: string, payload: SnapshotPayload): void;
   /** All events in chronological order. */
   getTimeline(): TimelineEvent[];
+  /** Event by id, or undefined. O(n) in buffer size. */
+  getEventById(id: string): TimelineEvent | undefined;
+  /** Index of event with id in getTimeline(), or -1. */
+  getEventIndexById(id: string): number;
+  /** Events from start up to and including index (for replay up to point). */
+  getEventsUpTo(index: number): TimelineEvent[];
   /** Get snapshot payload by id, or undefined. */
   getSnapshot(id: string): SnapshotPayload | undefined;
   /** Current time from injected clock (deterministic). */
   now(): number;
   /** Snapshot strategy config (for adapter to decide full vs incremental). */
   getSnapshotStrategy(): SnapshotStrategyConfig;
+  /** First event in timeline, or undefined. */
+  getFirstEvent(): TimelineEvent | undefined;
+  /** Last event in timeline, or undefined. */
+  getLastEvent(): TimelineEvent | undefined;
   /** Clear all events and snapshots. */
   clear(): void;
 }
@@ -60,6 +70,22 @@ export function createTimelineEngine(
       return eventBuffer.getEvents();
     },
 
+    getEventById(id: string): TimelineEvent | undefined {
+      const events = eventBuffer.getEvents();
+      return events.find((e) => e.id === id);
+    },
+
+    getEventIndexById(id: string): number {
+      const events = eventBuffer.getEvents();
+      return events.findIndex((e) => e.id === id);
+    },
+
+    getEventsUpTo(index: number): TimelineEvent[] {
+      const events = eventBuffer.getEvents();
+      const to = Math.max(-1, Math.min(index, events.length - 1));
+      return events.slice(0, to + 1);
+    },
+
     getSnapshot(id: string): SnapshotPayload | undefined {
       return snapshots.get(id);
     },
@@ -70,6 +96,14 @@ export function createTimelineEngine(
 
     getSnapshotStrategy(): SnapshotStrategyConfig {
       return snapshotStrategy;
+    },
+
+    getFirstEvent(): TimelineEvent | undefined {
+      return eventBuffer.first();
+    },
+
+    getLastEvent(): TimelineEvent | undefined {
+      return eventBuffer.last();
     },
 
     clear(): void {

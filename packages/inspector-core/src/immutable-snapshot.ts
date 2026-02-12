@@ -67,10 +67,10 @@ export function isImmutableSnapshot(value: unknown): value is ImmutableSnapshot 
   if (value === null || typeof value !== 'object') return false;
   const o = value as Record<string, unknown>;
   return (
-    typeof o.version === 'number' &&
-    typeof o.id === 'string' &&
-    typeof o.storeId === 'string' &&
+    typeof o['version'] === 'number' &&
+    typeof o['id'] === 'string' &&
+    typeof o['storeId'] === 'string' &&
     'state' in o &&
-    typeof o.timestamp === 'number'
+    typeof o['timestamp'] === 'number'
   );
 }
